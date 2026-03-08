@@ -1,23 +1,42 @@
 package main
 
 import (
-	"fmt"
+	"backend/internals/database"
+	"backend/internals/middlewares"
+	"backend/internals/routes"
+	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
 
-	fmt.Println("Server 1.22.4 starting on :8080")
+	database.InitDB()
+	defer database.Pool.Close()
 
-	mux.HandleFunc("GET /api/status", getStatusHandler)
+	if err := database.InitRedis(); err != nil {
+		log.Fatal("Could not connect to Redis: ", err)
+	}
 
-	http.ListenAndServe(":8080", mux)
-}
+	port := os.Getenv("PORT")
 
-func getStatusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-	w.Header().Set("Content-Type", "application/json")
+	if port == "" {
+		port = "8080"
+	}
 
-	fmt.Fprint(w, `{"text": "Backend is healthy", "status": 200}`)
+	addr := ":" + port
+
+	router := routes.NewRouter()
+	handler := middlewares.CORSMiddleware(router)
+
+	log.Printf("Server is running on http://localhost%s\n", addr)
+
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		log.Fatal("Server failed to start: ", err)
+	}
 }

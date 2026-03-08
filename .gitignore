@@ -7,6 +7,7 @@ frontend/.env*
 
 # --- Backend (Go) ---
 backend/bin/
+backend/.env
 backend/*.exe
 backend/*.dll
 backend/*.so
