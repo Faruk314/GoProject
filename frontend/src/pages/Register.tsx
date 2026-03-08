@@ -16,7 +16,7 @@ function Register() {
         <p className="mt-10 text-center text-sm text-gray-500">
           Already a member?{" "}
           <Link
-            to="/login"
+            to="/"
             className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500 transition-colors"
           >
             Sign in here

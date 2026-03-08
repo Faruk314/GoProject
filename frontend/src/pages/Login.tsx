@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 
 function Login() {
@@ -11,6 +12,16 @@ function Login() {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <LoginForm />
+
+        <p className="mt-10 text-center text-sm text-gray-500">
+          Not a member?{" "}
+          <Link
+            to="/register"
+            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500 transition-colors"
+          >
+            Create an account here
+          </Link>
+        </p>
       </div>
     </section>
   );
