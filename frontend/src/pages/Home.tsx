@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useLogoutMutation } from "../api/queries/auth";
 import Button from "../components/ui/Button";
 import { useAuthStore } from "../store/auth";
@@ -5,6 +6,7 @@ import { useAuthStore } from "../store/auth";
 function Home() {
   const { mutate: logoutUser, isPending } = useLogoutMutation();
   const { loggedUser } = useAuthStore();
+  const navigate = useNavigate();
 
   return (
     <section className="max-w-5xl mx-auto">
@@ -21,6 +23,15 @@ function Home() {
           Logout
         </Button>
       </div>
+
+      <Button
+        type="submit"
+        className="w-max"
+        loadingText="Logging you out..."
+        onClick={() => navigate("/game")}
+      >
+        Join Game
+      </Button>
     </section>
   );
 }
