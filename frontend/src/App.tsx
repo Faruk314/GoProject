@@ -9,6 +9,7 @@ import AuthGuard from "./components/AuthGuard";
 import Loader from "./components/ui/Loader";
 import Home from "./pages/Home";
 import { useWebSocket } from "./hooks/useWebSocket";
+import Game from "./pages/Game";
 
 function App() {
   const { isLoading } = useLoginStatusQuery();
@@ -35,6 +36,7 @@ function App() {
 
         <Route element={<AuthGuard />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/game" element={<Game />} />
         </Route>
       </Routes>
 
