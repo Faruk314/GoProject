@@ -3,7 +3,7 @@ import { useGameStore } from "../store/game";
 import { BucketIcon } from "../components/ui/BucketIcon";
 
 function CustomCursor() {
-  const { brushSize, brushColor, tool } = useGameStore();
+  const { brushSize, primaryColor, tool } = useGameStore();
   const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,7 +16,8 @@ function CustomCursor() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const size = tool === "bucket" ? 32 : brushSize;
+  const isBucket = tool === "bucket";
+  const size = isBucket ? 32 : brushSize;
 
   return (
     <div
@@ -28,26 +29,24 @@ function CustomCursor() {
         willChange: "transform",
       }}
     >
-      {tool === "bucket" ? (
-        <div className="relative animate-in fade-in zoom-in duration-200">
+      {isBucket ? (
+        <div className="relative w-full h-full flex items-center justify-center">
+          <div className="absolute w-[1.5px] h-4 bg-black shadow-[0_0_1px_white]" />
+          <div className="absolute h-[1.5px] w-4 bg-black shadow-[0_0_1px_white]" />
+
           <BucketIcon
-            className="w-8 h-8 text-gray-800"
+            className="w-6 h-6 text-gray-800"
             style={{
               filter: `drop-shadow(0 0 2px white)`,
 
-              transform: "translate(4px, -4px)",
+              transform: "translate(10px, -10px)",
             }}
-          />
-
-          <div
-            className="absolute bottom-0 left-0 w-3 h-3 rounded-full border border-white shadow-sm"
-            style={{ backgroundColor: brushColor }}
           />
         </div>
       ) : (
         <div
-          className="w-full h-full rounded-full border border-gray-400 animate-in fade-in zoom-in duration-200"
-          style={{ backgroundColor: brushColor }}
+          className="w-full h-full rounded-full border border-gray-400"
+          style={{ backgroundColor: primaryColor }}
         />
       )}
     </div>

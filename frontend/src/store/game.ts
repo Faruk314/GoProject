@@ -3,7 +3,7 @@ import type { Stroke } from "../types/game";
 
 interface GameState {
   tool: "brush" | "bucket";
-  brushColor: string;
+  primaryColor: string;
   secondaryColor: string;
   brushSize: number;
   isDrawingMode: boolean;
@@ -11,7 +11,7 @@ interface GameState {
   history: Stroke[];
   redoStack: Stroke[];
 
-  setBrushColor: (color: string) => void;
+  setPrimaryColor: (color: string) => void;
   setBrushSize: (size: number) => void;
   setTool: (tool: "brush" | "bucket") => void;
   swapColors: () => void;
@@ -24,7 +24,7 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set) => ({
   tool: "brush",
-  brushColor: "#000000",
+  primaryColor: "#000000",
   secondaryColor: "#FFFFFF",
   brushSize: 5,
   isDrawingMode: true,
@@ -33,14 +33,14 @@ export const useGameStore = create<GameState>((set) => ({
 
   setTool: (tool) => set({ tool }),
 
-  setBrushColor: (color) => set({ brushColor: color }),
+  setPrimaryColor: (color) => set({ primaryColor: color }),
 
   setBrushSize: (size) => set({ brushSize: size }),
 
   swapColors: () =>
     set((state) => ({
-      brushColor: state.secondaryColor,
-      secondaryColor: state.brushColor,
+      primaryColor: state.secondaryColor,
+      secondaryColor: state.primaryColor,
     })),
 
   pushStroke: (stroke) =>

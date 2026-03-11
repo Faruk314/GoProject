@@ -7,9 +7,11 @@ export const useCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const currentStroke = useRef<Point[]>([]);
+  const activeColorRef = useRef<string>("");
 
   const tool = useGameStore((state) => state.tool);
-  const brushColor = useGameStore((state) => state.brushColor);
+  const primaryColor = useGameStore((state) => state.primaryColor);
+  const secondaryColor = useGameStore((state) => state.secondaryColor);
   const brushSize = useGameStore((state) => state.brushSize);
   const history = useGameStore((state) => state.history);
   const pushStroke = useGameStore((state) => state.pushStroke);
@@ -23,6 +25,10 @@ export const useCanvas = () => {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     contextRef.current = ctx;
+
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    canvas.addEventListener("contextmenu", handleContextMenu);
+    return () => canvas.removeEventListener("contextmenu", handleContextMenu);
   }, []);
 
   useEffect(() => {
@@ -41,15 +47,19 @@ export const useCanvas = () => {
       const ctx = contextRef.current;
       if (!canvas || !ctx) return;
 
+      const isRightClick = e.button === 2;
+      const chosenColor = isRightClick ? secondaryColor : primaryColor;
+      activeColorRef.current = chosenColor;
+
       const x = Math.floor(offsetX);
       const y = Math.floor(offsetY);
 
       if (tool === "bucket") {
-        executeFloodFill(canvas, x, y, brushColor);
+        executeFloodFill(canvas, x, y, chosenColor);
         pushStroke({
           type: "bucket",
           points: [],
-          color: brushColor,
+          color: chosenColor,
           size: 0,
           startX: x,
           startY: y,
@@ -57,7 +67,7 @@ export const useCanvas = () => {
         return;
       }
 
-      ctx.strokeStyle = brushColor;
+      ctx.strokeStyle = chosenColor;
       ctx.lineWidth = brushSize;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -66,7 +76,7 @@ export const useCanvas = () => {
       ctx.beginPath();
       ctx.moveTo(offsetX, offsetY);
     },
-    [brushColor, brushSize, tool, pushStroke],
+    [primaryColor, secondaryColor, brushSize, tool, pushStroke],
   );
 
   const draw = useCallback((e: React.MouseEvent) => {
@@ -83,12 +93,13 @@ export const useCanvas = () => {
       pushStroke({
         type: "brush",
         points: [...currentStroke.current],
-        color: brushColor,
+        color: activeColorRef.current,
         size: brushSize,
       });
       currentStroke.current = [];
+      activeColorRef.current = "";
     }
-  }, [brushColor, brushSize, pushStroke]);
+  }, [brushSize, pushStroke]);
 
   return { canvasRef, startDrawing, draw, stopDrawing };
 };

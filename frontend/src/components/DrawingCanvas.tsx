@@ -21,6 +21,7 @@ function DrawingCanvas() {
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
+          onContextMenu={(e) => e.preventDefault()}
           onMouseLeave={() => {
             setShowCursor(false);
             stopDrawing();
