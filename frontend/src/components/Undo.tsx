@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useGameStore } from "../store/game";
 
-function UndoButton() {
+function Undo() {
   const undo = useGameStore((state) => state.undo);
   const redo = useGameStore((state) => state.redo);
   const historyLength = useGameStore((state) => state.history.length);
@@ -62,4 +62,4 @@ function UndoButton() {
   );
 }
 
-export default UndoButton;
+export default Undo;

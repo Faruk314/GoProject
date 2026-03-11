@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Stroke } from "../types/game";
 
 interface GameState {
+  tool: "brush" | "bucket";
   brushColor: string;
   secondaryColor: string;
   brushSize: number;
@@ -9,8 +10,10 @@ interface GameState {
 
   history: Stroke[];
   redoStack: Stroke[];
+
   setBrushColor: (color: string) => void;
   setBrushSize: (size: number) => void;
+  setTool: (tool: "brush" | "bucket") => void;
   swapColors: () => void;
 
   pushStroke: (stroke: Stroke) => void;
@@ -20,6 +23,7 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set) => ({
+  tool: "brush",
   brushColor: "#000000",
   secondaryColor: "#FFFFFF",
   brushSize: 5,
@@ -27,7 +31,10 @@ export const useGameStore = create<GameState>((set) => ({
   history: [],
   redoStack: [],
 
+  setTool: (tool) => set({ tool }),
+
   setBrushColor: (color) => set({ brushColor: color }),
+
   setBrushSize: (size) => set({ brushSize: size }),
 
   swapColors: () =>
@@ -45,9 +52,14 @@ export const useGameStore = create<GameState>((set) => ({
   undo: () =>
     set((state) => {
       if (state.history.length === 0) return state;
-      const lastStroke = state.history[state.history.length - 1];
+
+      const newHistory = [...state.history];
+      const lastStroke = newHistory.pop();
+
+      if (!lastStroke) return state;
+
       return {
-        history: state.history.slice(0, -1),
+        history: newHistory,
         redoStack: [lastStroke, ...state.redoStack],
       };
     }),
@@ -55,9 +67,11 @@ export const useGameStore = create<GameState>((set) => ({
   redo: () =>
     set((state) => {
       if (state.redoStack.length === 0) return state;
-      const nextStroke = state.redoStack[0];
+
+      const [nextStroke, ...remainingRedo] = state.redoStack;
+
       return {
-        redoStack: state.redoStack.slice(1),
+        redoStack: remainingRedo,
         history: [...state.history, nextStroke],
       };
     }),

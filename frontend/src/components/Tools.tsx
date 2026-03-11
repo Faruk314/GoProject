@@ -1,8 +1,10 @@
+import Brush from "./Brush";
 import BrushSizes from "./BrushSizes";
-import ClearButton from "./ClearButton";
+import Bucket from "./Bucket";
+import Clear from "./Clear";
 import ColorPalette from "./ColorPalette";
 import ColorSwapper from "./ColorSwapper";
-import UndoButton from "./UndoButton";
+import Undo from "./Undo";
 
 function Tools() {
   return (
@@ -10,8 +12,10 @@ function Tools() {
       <ColorSwapper />
       <ColorPalette />
       <BrushSizes />
-      <UndoButton />
-      <ClearButton />
+      <Brush />
+      <Bucket />
+      <Undo />
+      <Clear />
     </div>
   );
 }

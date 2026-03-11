@@ -1,6 +1,6 @@
 import { useGameStore } from "../store/game";
 
-function ClearButton() {
+function Clear() {
   const historyLength = useGameStore((state) => state.history.length);
   const clearHistory = useGameStore((state) => state.clearHistory);
 
@@ -36,4 +36,4 @@ function ClearButton() {
   );
 }
 
-export default ClearButton;
+export default Clear;
