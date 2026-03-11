@@ -1,3 +1,6 @@
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 500;
+
 const COLORS = [
   "#000000",
   "#FFFFFF",
@@ -18,4 +21,4 @@ const BRUSH_SIZES = [
   { id: "xl", value: 32 },
 ];
 
-export { COLORS, BRUSH_SIZES };
+export { CANVAS_WIDTH, CANVAS_HEIGHT, COLORS, BRUSH_SIZES };

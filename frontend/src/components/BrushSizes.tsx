@@ -4,7 +4,8 @@ import { BRUSH_SIZES } from "../utils/constants";
 
 function BrushDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { brushSize, setBrushSize } = useGameStore();
+  const brushSize = useGameStore((state) => state.brushSize);
+  const setBrushSize = useGameStore((state) => state.setBrushSize);
 
   return (
     <div className="relative inline-block">
