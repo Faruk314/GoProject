@@ -1,4 +1,4 @@
-package handlers
+package ws
 
 import (
 	"backend/internals/response"
@@ -18,21 +18,44 @@ const (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
+}
 
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
+func (cm *ConnectionManager) HandleWS(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		response.SendError(w, http.StatusUnauthorized, "User context missing")
+		return
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("Upgrade error: %v", err)
+		return
+	}
+
+	cm.Add(userID, conn)
+
+	defer func() {
+		cm.Remove(userID)
+		conn.Close()
+		log.Printf("User %d cleaned up and disconnected", userID)
+	}()
+
+	log.Printf("User %d is now live via WebSocket", userID)
+
+	handleUserConnection(conn, userID)
 }
 
 func handleUserConnection(conn *websocket.Conn, userID int) {
 	conn.SetReadDeadline(time.Now().Add(pongWait))
-
 	conn.SetPongHandler(func(string) error {
 		conn.SetReadDeadline(time.Now().Add(pongWait))
 		return nil
 	})
 
 	stopPing := make(chan struct{})
+
 	go func() {
 		ticker := time.NewTicker(pingPeriod)
 		defer ticker.Stop()
@@ -48,43 +71,18 @@ func handleUserConnection(conn *websocket.Conn, userID int) {
 		}
 	}()
 
-	defer func() {
-		close(stopPing)
-		log.Printf("User %d disconnected", userID)
-		conn.Close()
-	}()
-
 	for {
-
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Read error for user %d: %v", userID, err)
+			close(stopPing)
 			break
 		}
 
 		log.Printf("Message from %d: %s", userID, string(p))
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Printf("Write error for user %d: %v", userID, err)
 			break
 		}
 	}
-}
-
-func HandleWS(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
-	if !ok {
-		response.SendError(w, http.StatusUnauthorized, "User context missing")
-		return
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Upgrade error: %v", err)
-		return
-	}
-
-	log.Printf("User %s is now live via WebSocket", userID)
-
-	go handleUserConnection(conn, userID)
 }

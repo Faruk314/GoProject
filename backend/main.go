@@ -4,6 +4,7 @@ import (
 	"backend/internals/database"
 	"backend/internals/middlewares"
 	"backend/internals/routes"
+	"backend/internals/ws"
 	"log"
 	"net/http"
 	"os"
@@ -31,7 +32,8 @@ func main() {
 
 	addr := ":" + port
 
-	router := routes.NewRouter()
+	manager := ws.NewConnectionManager()
+	router := routes.NewRouter(manager)
 	handler := middlewares.CORSMiddleware(router)
 
 	log.Printf("Server is running on http://localhost%s\n", addr)
