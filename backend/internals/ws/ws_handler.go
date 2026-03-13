@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"backend/internals/models"
 	"backend/internals/response"
 	"log"
 	"net/http"
@@ -44,10 +45,10 @@ func (cm *ConnectionManager) HandleWS(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("User %d is now live via WebSocket", userID)
 
-	handleUserConnection(conn, userID)
+	cm.handleUserConnection(conn, userID)
 }
 
-func handleUserConnection(conn *websocket.Conn, userID int) {
+func (cm *ConnectionManager) handleUserConnection(conn *websocket.Conn, userID int) {
 	conn.SetReadDeadline(time.Now().Add(pongWait))
 	conn.SetPongHandler(func(string) error {
 		conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -55,7 +56,6 @@ func handleUserConnection(conn *websocket.Conn, userID int) {
 	})
 
 	stopPing := make(chan struct{})
-
 	go func() {
 		ticker := time.NewTicker(pingPeriod)
 		defer ticker.Stop()
@@ -72,17 +72,22 @@ func handleUserConnection(conn *websocket.Conn, userID int) {
 	}()
 
 	for {
-		messageType, p, err := conn.ReadMessage()
+		var msg models.WSMessage
+
+		err := conn.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("Read error for user %d: %v", userID, err)
 			close(stopPing)
 			break
 		}
 
-		log.Printf("Message from %d: %s", userID, string(p))
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			break
+		switch msg.Action {
+		case models.ActionJoinRoom:
+			cm.JoinRoom(userID, msg.Room)
+		case models.ActionLeaveRoom:
+			cm.LeaveRoom(userID, msg.Room)
+		default:
+			log.Printf("Unknown action: %s from user %d", msg.Action, userID)
 		}
 	}
 }
