@@ -1,5 +1,5 @@
-import { useGameStore } from "../store/game";
-import { COLORS } from "../utils/constants";
+import { useGameStore } from "../../store/game";
+import { COLORS } from "../../utils/constants";
 
 function ColorPalette() {
   const { primaryColor, setPrimaryColor } = useGameStore();

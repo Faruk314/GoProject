@@ -1,5 +1,5 @@
-import DrawingCanvas from "../components/DrawingCanvas";
-import Tools from "../components/Tools";
+import DrawingCanvas from "../components/game/DrawingCanvas";
+import Tools from "../components/game/Tools";
 
 export default function Game() {
   return (

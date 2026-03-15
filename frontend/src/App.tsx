@@ -5,7 +5,7 @@ import Register from "./pages/Register";
 import { ToastContainer } from "react-toastify";
 import { useLoginStatusQuery } from "./api/queries/auth";
 import { useAuthStore } from "./store/auth";
-import AuthGuard from "./components/AuthGuard";
+import AuthGuard from "./components/auth/AuthGuard";
 import Loader from "./components/ui/Loader";
 import Home from "./pages/Home";
 import { useWebSocket } from "./hooks/useWebSocket";

@@ -1,4 +1,4 @@
-import { useGameStore } from "../store/game";
+import { useGameStore } from "../../store/game";
 
 function ColorSwapper() {
   const { primaryColor, secondaryColor, swapColors } = useGameStore();

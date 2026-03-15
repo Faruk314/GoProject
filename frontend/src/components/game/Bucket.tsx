@@ -1,14 +1,14 @@
-import { useGameStore } from "../store/game";
-import { BrushIcon } from "../components/ui/BrushIcon";
+import { useGameStore } from "../../store/game";
+import { BucketIcon } from "../ui/BucketIcon";
 
-function Brush() {
+function Bucket() {
   const tool = useGameStore((state) => state.tool);
   const setTool = useGameStore((state) => state.setTool);
-  const isActive = tool === "brush";
+  const isActive = tool === "bucket";
 
   return (
     <button
-      onClick={() => setTool("brush")}
+      onClick={() => setTool("bucket")}
       className={`
         w-14 h-14 rounded-lg border-2 flex items-center justify-center
         transition-all active:scale-95 shadow-sm
@@ -19,9 +19,9 @@ function Brush() {
         }
       `}
     >
-      <BrushIcon className="w-7 h-7" />
+      <BucketIcon className="w-7 h-7" />
     </button>
   );
 }
 
-export default Brush;
+export default Bucket;

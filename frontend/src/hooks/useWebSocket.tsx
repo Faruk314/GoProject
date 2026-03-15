@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { emit, WSAction, type WSMessage } from "../types/ws";
 
 export function useWebSocket() {
   const webSocketRef = useRef<WebSocket | null>(null);
@@ -10,7 +11,17 @@ export function useWebSocket() {
 
     socket.onopen = () => {
       console.log("WebSocket Connected");
-      socket.send(JSON.stringify({ type: "hello", content: "I am online!" }));
+
+      emit(socket, WSAction.JoinGame, "lobby");
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data: WSMessage = JSON.parse(event.data);
+        console.log("📩 Broadcast Received:", data);
+      } catch (err) {
+        console.error("Failed to parse socket message:", err);
+      }
     };
 
     socket.onclose = () => {

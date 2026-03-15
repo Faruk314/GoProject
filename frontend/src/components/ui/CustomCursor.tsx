@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useGameStore } from "../store/game";
-import { BucketIcon } from "../components/ui/BucketIcon";
+import { useGameStore } from "../../store/game";
+import { BucketIcon } from "./BucketIcon";
 
 function CustomCursor() {
   const { brushSize, primaryColor, tool } = useGameStore();

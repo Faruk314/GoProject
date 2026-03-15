@@ -1,4 +1,4 @@
-import { useGameStore } from "../store/game";
+import { useGameStore } from "../../store/game";
 
 function Clear() {
   const historyLength = useGameStore((state) => state.history.length);

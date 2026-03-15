@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useGameStore } from "../store/game";
-import { BRUSH_SIZES } from "../utils/constants";
+import { useGameStore } from "../../store/game";
+import { BRUSH_SIZES } from "../../utils/constants";
 
 function BrushDropdown() {
   const [isOpen, setIsOpen] = useState(false);

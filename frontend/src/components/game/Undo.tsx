@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useGameStore } from "../store/game";
+import { useGameStore } from "../../store/game";
 
 function Undo() {
   const undo = useGameStore((state) => state.undo);

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useCanvas } from "../hooks/useCanvas";
-import CustomCursor from "./CustomCursor";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../utils/constants";
+import { useCanvas } from "../../hooks/useCanvas";
+import CustomCursor from "../ui/CustomCursor";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 
 function DrawingCanvas() {
   const [showCursor, setShowCursor] = useState(false);
