@@ -2,108 +2,56 @@ package ws
 
 import (
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
+type Client struct {
+	conn *websocket.Conn
+	send chan interface{}
+}
+
 type ConnectionManager struct {
-	connections map[int]*websocket.Conn
-	rooms       map[string]map[int]struct{}
-	userRooms   map[int]map[string]struct{}
-	mu          sync.RWMutex
+	clients   map[int]*Client
+	rooms     map[string]map[int]struct{}
+	userRooms map[int]map[string]struct{}
+	mu        sync.RWMutex
 }
 
 func NewConnectionManager() *ConnectionManager {
 	return &ConnectionManager{
-		connections: make(map[int]*websocket.Conn),
-		rooms:       make(map[string]map[int]struct{}),
-		userRooms:   make(map[int]map[string]struct{}),
+		clients:   make(map[int]*Client),
+		rooms:     make(map[string]map[int]struct{}),
+		userRooms: make(map[int]map[string]struct{}),
 	}
 }
 
-func (cm *ConnectionManager) Add(userId int, conn *websocket.Conn) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	cm.connections[userId] = conn
-}
+func (c *Client) writePump() {
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		c.conn.Close()
+	}()
 
-func (cm *ConnectionManager) Remove(userId int) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	if conn, ok := cm.connections[userId]; ok {
-		conn.Close()
-		delete(cm.connections, userId)
-	}
-
-	if rooms, ok := cm.userRooms[userId]; ok {
-		for roomName := range rooms {
-			if usersInRoom, exists := cm.rooms[roomName]; exists {
-				delete(usersInRoom, userId)
-
-				if len(usersInRoom) == 0 {
-					delete(cm.rooms, roomName)
-				}
+	for {
+		select {
+		case message, ok := <-c.send:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
 			}
-		}
 
-		delete(cm.userRooms, userId)
-	}
-}
+			if err := c.conn.WriteJSON(message); err != nil {
+				return
+			}
 
-func (cm *ConnectionManager) Get(userId int) (*websocket.Conn, bool) {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
-	conn, ok := cm.connections[userId]
-
-	return conn, ok
-}
-
-func (cm *ConnectionManager) JoinRoom(userId int, roomName string) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	if _, online := cm.connections[userId]; !online {
-		return
-	}
-
-	if _, alreadyJoined := cm.userRooms[userId][roomName]; alreadyJoined {
-		return
-	}
-
-	if cm.rooms[roomName] == nil {
-		cm.rooms[roomName] = make(map[int]struct{})
-	}
-
-	cm.rooms[roomName][userId] = struct{}{}
-
-	if cm.userRooms[userId] == nil {
-		cm.userRooms[userId] = make(map[string]struct{})
-	}
-
-	cm.userRooms[userId][roomName] = struct{}{}
-}
-
-func (cm *ConnectionManager) LeaveRoom(userId int, roomName string) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	if users, exists := cm.rooms[roomName]; exists {
-
-		delete(users, userId)
-
-		if len(users) == 0 {
-			delete(cm.rooms, roomName)
-		}
-
-	}
-
-	if rooms, exists := cm.userRooms[userId]; exists {
-		delete(rooms, roomName)
-
-		if len(rooms) == 0 {
-			delete(cm.userRooms, userId)
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
 		}
 	}
 }

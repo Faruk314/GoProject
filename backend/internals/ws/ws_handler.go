@@ -39,7 +39,6 @@ func (cm *ConnectionManager) HandleWS(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		cm.Remove(userID)
-		conn.Close()
 		log.Printf("User %d cleaned up and disconnected", userID)
 	}()
 
@@ -55,29 +54,12 @@ func (cm *ConnectionManager) handleUserConnection(conn *websocket.Conn, userID i
 		return nil
 	})
 
-	stopPing := make(chan struct{})
-	go func() {
-		ticker := time.NewTicker(pingPeriod)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait)); err != nil {
-					return
-				}
-			case <-stopPing:
-				return
-			}
-		}
-	}()
-
 	for {
 		var msg models.WSMessage
 
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("Read error for user %d: %v", userID, err)
-			close(stopPing)
 			break
 		}
 
