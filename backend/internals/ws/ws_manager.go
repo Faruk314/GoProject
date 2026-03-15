@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"backend/internals/models"
+	"log"
 	"sync"
 	"time"
 
@@ -52,6 +54,39 @@ func (c *Client) writePump() {
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
+		}
+	}
+}
+
+func (cm *ConnectionManager) EmitToRoom(roomName string, msg models.WSMessage) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	userIds, exists := cm.rooms[roomName]
+	if !exists {
+		return
+	}
+
+	for userId := range userIds {
+		if client, ok := cm.clients[userId]; ok {
+			select {
+			case client.send <- msg:
+			default:
+				log.Printf("Dropped message for user %d: buffer full", userId)
+			}
+		}
+	}
+}
+
+func (cm *ConnectionManager) EmitToUser(userId int, msg models.WSMessage) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	if client, ok := cm.clients[userId]; ok {
+		select {
+		case client.send <- msg:
+		default:
+			log.Printf("Dropped private message for user %d: buffer full", userId)
 		}
 	}
 }
