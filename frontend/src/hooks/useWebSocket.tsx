@@ -1,41 +1,56 @@
-import { useEffect, useRef } from "react";
-import { emit, WSAction, type WSMessage } from "../types/ws";
+// context/WebSocketContext.tsx
+import React, { createContext, useContext, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { emit, WSAction } from "../types/ws";
 
-export function useWebSocket() {
-  const webSocketRef = useRef<WebSocket | null>(null);
+interface WebSocketContextType {
+  send: (action: typeof WSAction, payload: any) => void;
+}
+
+const WebSocketContext = createContext<WebSocketContextType | null>(null);
+
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const socketRef = useRef<WebSocket | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/api/ws");
-
-    webSocketRef.current = socket;
+    socketRef.current = socket;
 
     socket.onopen = () => {
       console.log("WebSocket Connected");
-
       emit(socket, WSAction.JoinGame, "lobby");
     };
 
     socket.onmessage = (event) => {
-      try {
-        const data: WSMessage = JSON.parse(event.data);
-        console.log("📩 Broadcast Received:", data);
-      } catch (err) {
-        console.error("Failed to parse socket message:", err);
+      const data = JSON.parse(event.data);
+
+      if (data.action === "join_game") {
+        navigate("/game");
       }
     };
 
-    socket.onclose = () => {
-      console.log("WebSocket Disconnected");
-    };
+    return () => socket.close();
+  }, [navigate]);
 
-    socket.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-    };
+  const send = (action: WSAction, payload: any) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      emit(socketRef.current, action, payload);
+    }
+  };
 
-    return () => {
-      socket.close();
-    };
-  }, []);
+  return (
+    <WebSocketContext.Provider value={{ send }}>
+      {children}
+    </WebSocketContext.Provider>
+  );
+};
 
-  return webSocketRef;
-}
+export const useWS = () => {
+  const context = useContext(WebSocketContext);
+  if (!context)
+    throw new Error("useWS must be used within a WebSocketProvider");
+  return context;
+};

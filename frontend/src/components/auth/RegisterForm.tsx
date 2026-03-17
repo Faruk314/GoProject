@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../../schemas/auth";
 import type { RegisterInput } from "../../types/auth";
-import { useRegisterMutation } from "../../api/queries/auth";
+import { useRegisterMutation } from "../../services/api/queries/auth";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 

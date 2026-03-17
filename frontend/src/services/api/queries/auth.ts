@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getErrorMessage } from "../../utils/error";
-import { useAuthStore } from "../../store/auth";
+import { getErrorMessage } from "../../../utils/error";
+import { useAuthStore } from "../../../store/auth";
 import { useNavigate } from "react-router-dom";
-import { login, register, getLoginStatus, logout } from "../services/auth";
-import { useToast } from "../../hooks/useToast";
+import { login, register, getLoginStatus, logout } from "../endpoints/auth";
+import { useToast } from "../../../hooks/useToast";
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();

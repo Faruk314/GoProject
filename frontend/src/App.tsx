@@ -3,20 +3,16 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { ToastContainer } from "react-toastify";
-import { useLoginStatusQuery } from "./api/queries/auth";
+import { useLoginStatusQuery } from "./services/api/queries/auth";
 import { useAuthStore } from "./store/auth";
 import AuthGuard from "./components/auth/AuthGuard";
 import Loader from "./components/ui/Loader";
 import Home from "./pages/Home";
-import { useWebSocket } from "./hooks/useWebSocket";
 import Game from "./pages/Game";
 
 function App() {
   const { isLoading } = useLoginStatusQuery();
   const { isLogged } = useAuthStore();
-  const ws = useWebSocket();
-
-  console.log(ws);
 
   if (isLoading) {
     return <Loader text="Verifying session..." />;

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useLogoutMutation } from "../api/queries/auth";
+import { useLogoutMutation } from "../services/api/queries/auth";
 import Button from "../components/ui/Button";
 import { useAuthStore } from "../store/auth";
 
@@ -30,7 +30,7 @@ function Home() {
         loadingText="Logging you out..."
         onClick={() => navigate("/game")}
       >
-        Join Game
+        Create private game
       </Button>
     </section>
   );
