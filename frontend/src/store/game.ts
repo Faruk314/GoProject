@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import type { Stroke } from "../types/game";
+import { socketService } from "../services/websocket/websocket";
+import { WSAction } from "../types/ws";
 
 interface GameState {
+  gameId: string | null;
   tool: "brush" | "bucket";
   primaryColor: string;
   secondaryColor: string;
@@ -20,9 +23,14 @@ interface GameState {
   undo: () => void;
   redo: () => void;
   clearHistory: () => void;
+
+  setGameId: (gameId: string) => void;
+
+  createGame: () => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
+  gameId: null,
   tool: "brush",
   primaryColor: "#000000",
   secondaryColor: "#FFFFFF",
@@ -77,4 +85,10 @@ export const useGameStore = create<GameState>((set) => ({
     }),
 
   clearHistory: () => set({ history: [], redoStack: [] }),
+
+  setGameId: (gameId) => set({ gameId }),
+
+  createGame: () => {
+    socketService.send(WSAction.CreateGame, {});
+  },
 }));
